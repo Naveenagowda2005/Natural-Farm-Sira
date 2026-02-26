@@ -1,3 +1,14 @@
+import milkingMachine from '@/assets/products/milking-machine.png';
+import chaffCutter from '@/assets/products/chaff-cutter.png';
+import frontRotary from '@/assets/products/front-rotary.png';
+import pressureWasher from '@/assets/products/pressure-washer.png';
+import wheelbarrow from '@/assets/products/wheelbarrow.png';
+import goatMat from '@/assets/products/goat-mat.png';
+import silageBag from '@/assets/products/silage-bag.png';
+import azollaVermi from '@/assets/products/azolla-vermi.png';
+import sugarcane from '@/assets/products/sugarcane.png';
+import fodderSeeds from '@/assets/products/fodder-seeds.png';
+
 export interface Product {
   id: string;
   nameEn: string;
@@ -19,6 +30,19 @@ export interface Category {
   nameEn: string;
   nameKn: string;
 }
+
+export const subCategoryImages: Record<string, string> = {
+  milking: milkingMachine,
+  chaff: chaffCutter,
+  rotary: frontRotary,
+  washer: pressureWasher,
+  wheelbarrow: wheelbarrow,
+  'goat-mats': goatMat,
+  silage: silageBag,
+  azolla: azollaVermi,
+  sugarcane: sugarcane,
+  fodder: fodderSeeds,
+};
 
 export const categories: Category[] = [
   { id: 'agri-machines', nameEn: 'Agricultural Machines', nameKn: 'ಕೃಷಿ ಯಂತ್ರಗಳು' },

@@ -1,6 +1,6 @@
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Product, getWhatsAppLink } from '@/data/products';
-import { MessageCircle, Package } from 'lucide-react';
+import { Product, getWhatsAppLink, subCategoryImages } from '@/data/products';
+import { MessageCircle } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -8,12 +8,17 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { language, t } = useLanguage();
-  const name = language === 'en' ? product.nameEn : product.nameKn;
+  const image = subCategoryImages[product.subCategoryId];
 
   return (
     <div className="bg-card rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
-      <div className="aspect-square bg-muted flex items-center justify-center">
-        <Package className="w-16 h-16 text-muted-foreground/40" />
+      <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
+        <img
+          src={image}
+          alt={product.nameEn}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
       </div>
       <div className="p-4 flex flex-col flex-1">
         <h3 className="font-heading text-base font-bold text-foreground leading-tight">{product.nameEn}</h3>
