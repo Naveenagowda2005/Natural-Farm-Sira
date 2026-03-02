@@ -27,7 +27,8 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       process.env.FRONTEND_URL || 'http://localhost:5173',
-      'https://illustrious-crisp-179b52.netlify.app'
+      'https://illustrious-crisp-179b52.netlify.app',
+      'https://beautiful-zuccutto-cab8a3.netlify.app'
     ],
     credentials: true,
   });
