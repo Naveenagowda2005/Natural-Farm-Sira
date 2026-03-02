@@ -134,8 +134,13 @@ export class InquiriesService {
     }
   }
 
-  async deleteAll(): Promise<void> {
+  async deleteAll(): Promise<{ message: string; count: number }> {
     const supabase = this.supabaseService.getClient();
+
+    // First, get the count of inquiries to be deleted
+    const { count: totalCount } = await supabase
+      .from('inquiries')
+      .select('*', { count: 'exact', head: true });
 
     // Delete all inquiries
     const { error } = await supabase
@@ -146,5 +151,10 @@ export class InquiriesService {
     if (error) {
       DatabaseErrorHandler.handleError(error, 'delete all inquiries');
     }
+
+    return {
+      message: 'All inquiries deleted successfully',
+      count: totalCount || 0,
+    };
   }
 }
