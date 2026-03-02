@@ -47,7 +47,7 @@ export const subCategoryImages: Record<string, string> = {
 export const categories: Category[] = [
   { id: 'agri-machines', nameEn: 'Agricultural Machines', nameKn: 'ಕೃಷಿ ಯಂತ್ರಗಳು' },
   { id: 'livestock', nameEn: 'Livestock & Farm Accessories', nameKn: 'ಪಶುಸಂಗೋಪನೆ ಉತ್ಪನ್ನಗಳು' },
-  { id: 'seeds', nameEn: 'Seeds & Planting Material', nameKn: 'ಬೀಜಗಳು ಮತ್ತು ನೆಡುವ ವಸ್ತುಗಳು' },
+  { id: 'seeds', nameEn: 'Napier Sticks', nameKn: 'ನೇಪಿಯರ್ ಕಡ್ಡಿಗಳು' },
 ];
 
 export const subCategories: SubCategory[] = [
