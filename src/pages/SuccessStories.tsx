@@ -49,7 +49,7 @@ const SuccessStories = () => {
                   <Quote className="w-8 h-8 text-primary/30 mb-4" />
                   <div className="flex gap-1 mb-3">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className={`w-5 h-5 ${i < testimonial.rating ? 'text-farm-gold fill-farm-gold' : 'text-muted'}`} />
+                      <Star key={i} className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted'}`} />
                     ))}
                   </div>
                   <p className="text-foreground leading-relaxed mb-4 italic">"{testimonial.message}"</p>
