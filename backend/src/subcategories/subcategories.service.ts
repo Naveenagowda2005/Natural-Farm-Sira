@@ -3,6 +3,7 @@ import { SupabaseService } from '../supabase/supabase.service';
 import { SubCategory } from './subcategory.entity';
 import { CreateSubCategoryDto } from './dto/create-subcategory.dto';
 import { UpdateSubCategoryDto } from './dto/update-subcategory.dto';
+import { ReorderSubCategoriesDto } from './dto/reorder-subcategories.dto';
 import { DatabaseErrorHandler } from '../common/utils/database-error.handler';
 
 @Injectable()
@@ -23,9 +24,20 @@ export class SubCategoriesService {
       throw new BadRequestException('Parent category does not exist');
     }
 
+    // Get the next display order for this category
+    const { data: maxOrderData } = await supabase
+      .from('subcategories')
+      .select('display_order')
+      .eq('category_id', createSubCategoryDto.category_id)
+      .order('display_order', { ascending: false })
+      .limit(1)
+      .single();
+
+    const nextOrder = maxOrderData ? maxOrderData.display_order + 1 : 0;
+
     const { data, error } = await supabase
       .from('subcategories')
-      .insert([createSubCategoryDto])
+      .insert([{ ...createSubCategoryDto, display_order: nextOrder }])
       .select()
       .single();
 
@@ -43,7 +55,7 @@ export class SubCategoriesService {
       .from('subcategories')
       .select('*')
       .order('category_id', { ascending: true })
-      .order('created_at', { ascending: false });
+      .order('display_order', { ascending: true });
 
     if (error) {
       DatabaseErrorHandler.handleError(error, 'fetch subcategories');
@@ -131,5 +143,24 @@ export class SubCategoriesService {
     if (error) {
       DatabaseErrorHandler.handleError(error, 'delete subcategory');
     }
+  }
+
+  async reorder(reorderDto: ReorderSubCategoriesDto): Promise<SubCategory[]> {
+    const supabase = this.supabaseService.getClient();
+
+    // Update each subcategory's display_order
+    for (const item of reorderDto.subcategories) {
+      const { error } = await supabase
+        .from('subcategories')
+        .update({ display_order: item.display_order })
+        .eq('id', item.id);
+
+      if (error) {
+        DatabaseErrorHandler.handleError(error, 'reorder subcategories');
+      }
+    }
+
+    // Return updated list
+    return this.findAll();
   }
 }

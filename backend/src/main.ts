@@ -15,7 +15,7 @@ async function bootstrap() {
     new CustomValidationPipe(),
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false, // Temporarily disabled for debugging
       transform: true,
       transformOptions: {
         enableImplicitConversion: true,
