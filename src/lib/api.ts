@@ -36,12 +36,22 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
     throw new ApiError(response.status, errorData.message || 'An error occurred');
   }
   
-  // Handle 204 No Content
-  if (response.status === 204) {
+  // Handle 204 No Content or empty response
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
     return undefined as T;
   }
   
-  return response.json();
+  // Check if response has content
+  const text = await response.text();
+  if (!text) {
+    return undefined as T;
+  }
+  
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    return undefined as T;
+  }
 };
 
 // ============= Categories API =============
@@ -49,6 +59,7 @@ export interface Category {
   id: string;
   name_en: string;
   name_kn: string;
+  display_order: number;
   created_at: string;
   updated_at: string;
 }
@@ -99,6 +110,15 @@ export const categoriesApi = {
     });
     return handleResponse(response);
   },
+
+  reorder: async (data: { id: string; display_order: number }[]): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/api/categories/reorder`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ categories: data }),
+    });
+    return handleResponse(response);
+  },
 };
 
 // ============= SubCategories API =============
@@ -107,6 +127,7 @@ export interface SubCategory {
   name_en: string;
   name_kn: string;
   category_id: string;
+  display_order: number;
   created_at: string;
   updated_at: string;
 }
@@ -157,6 +178,15 @@ export const subCategoriesApi = {
     });
     return handleResponse(response);
   },
+
+  reorder: async (data: { id: string; display_order: number }[]): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/api/subcategories/reorder`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ subcategories: data }),
+    });
+    return handleResponse(response);
+  },
 };
 
 // ============= Products API =============
@@ -170,6 +200,7 @@ export interface Product {
   subcategory_id: string;
   is_visible: boolean;
   image_url?: string;
+  display_order: number;
   created_at: string;
   updated_at: string;
 }
@@ -261,6 +292,15 @@ export const productsApi = {
       method: 'POST',
       headers: getHeaders(false), // Don't include Content-Type for FormData
       body: formData,
+    });
+    return handleResponse(response);
+  },
+
+  reorder: async (data: { id: string; display_order: number }[]): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/api/products/reorder`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ products: data }),
     });
     return handleResponse(response);
   },

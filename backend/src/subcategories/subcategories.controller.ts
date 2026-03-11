@@ -13,6 +13,7 @@ import {
 import { SubCategoriesService } from './subcategories.service';
 import { CreateSubCategoryDto } from './dto/create-subcategory.dto';
 import { UpdateSubCategoryDto } from './dto/update-subcategory.dto';
+import { ReorderSubCategoriesDto } from './dto/reorder-subcategories.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { SubCategory } from './subcategory.entity';
 
@@ -37,6 +38,13 @@ export class SubCategoriesController {
   @UseGuards(JwtAuthGuard)
   async findAll(): Promise<SubCategory[]> {
     return this.subCategoriesService.findAll();
+  }
+
+  @Put('reorder')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async reorder(@Body() reorderDto: ReorderSubCategoriesDto): Promise<void> {
+    return this.subCategoriesService.reorder(reorderDto.subcategories);
   }
 
   @Get(':id')

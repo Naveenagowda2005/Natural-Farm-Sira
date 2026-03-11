@@ -31,6 +31,7 @@ export class CategoriesService {
     const { data, error } = await supabase
       .from('categories')
       .select('*')
+      .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -105,6 +106,21 @@ export class CategoriesService {
 
     if (error) {
       DatabaseErrorHandler.handleError(error, 'delete category');
+    }
+  }
+
+  async reorder(categories: { id: string; display_order: number }[]): Promise<void> {
+    const supabase = this.supabaseService.getClient();
+
+    for (const item of categories) {
+      const { error } = await supabase
+        .from('categories')
+        .update({ display_order: item.display_order })
+        .eq('id', item.id);
+
+      if (error) {
+        DatabaseErrorHandler.handleError(error, 'reorder categories');
+      }
     }
   }
 }

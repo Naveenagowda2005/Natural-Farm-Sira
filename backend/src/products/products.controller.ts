@@ -19,6 +19,7 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { UpdateVisibilityDto } from './dto/update-visibility.dto';
+import { ReorderProductsDto } from './dto/reorder-products.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Product } from './product.entity';
 
@@ -66,6 +67,13 @@ export class ProductsController {
     }
 
     return this.productsService.findAll(filters);
+  }
+
+  @Put('reorder')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async reorder(@Body() reorderDto: ReorderProductsDto): Promise<void> {
+    return this.productsService.reorder(reorderDto.products);
   }
 
   @Get(':id')

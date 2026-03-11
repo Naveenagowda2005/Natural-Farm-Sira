@@ -52,6 +52,7 @@ export class ProductsService {
     let query = supabase
       .from('products')
       .select('*')
+      .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
 
     if (filters?.subcategory_id) {
@@ -209,5 +210,20 @@ export class ProductsService {
     }
 
     return data;
+  }
+
+  async reorder(products: { id: string; display_order: number }[]): Promise<void> {
+    const supabase = this.supabaseService.getClient();
+
+    for (const item of products) {
+      const { error } = await supabase
+        .from('products')
+        .update({ display_order: item.display_order })
+        .eq('id', item.id);
+
+      if (error) {
+        DatabaseErrorHandler.handleError(error, 'reorder products');
+      }
+    }
   }
 }

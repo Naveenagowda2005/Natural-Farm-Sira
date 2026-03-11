@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoriesApi, Category } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -34,69 +34,6 @@ interface CategoryFormData {
   name_kn: string;
 }
 
-interface SortableCategoryCardProps {
-  category: Category;
-  onEdit: (category: Category) => void;
-  onDelete: (category: Category) => void;
-}
-
-const SortableCategoryCard = ({ category, onEdit, onDelete }: SortableCategoryCardProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: category.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <Card ref={setNodeRef} style={style} className={isDragging ? 'shadow-lg' : ''}>
-      <CardHeader>
-        <div className="flex items-start gap-2">
-          <button
-            className="cursor-grab active:cursor-grabbing mt-1 touch-none"
-            {...attributes}
-            {...listeners}
-          >
-            <GripVertical className="h-5 w-5 text-gray-400" />
-          </button>
-          <div className="flex-1">
-            <CardTitle className="text-lg">{category.name_en}</CardTitle>
-            <CardDescription>{category.name_kn}</CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onEdit(category)}
-          >
-            <Pencil className="h-4 w-4 mr-1" />
-            Edit
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onDelete(category)}
-          >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Delete
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
 const Categories = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -110,18 +47,13 @@ const Categories = () => {
   });
   const [formErrors, setFormErrors] = useState<Partial<CategoryFormData>>({});
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
+  // Fetch categories
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: categoriesApi.getAll,
   });
 
+  // Create mutation
   const createMutation = useMutation({
     mutationFn: categoriesApi.create,
     onSuccess: () => {
@@ -141,6 +73,7 @@ const Categories = () => {
     },
   });
 
+  // Update mutation
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: CategoryFormData }) =>
       categoriesApi.update(id, data),
@@ -161,6 +94,7 @@ const Categories = () => {
     },
   });
 
+  // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: categoriesApi.delete,
     onSuccess: () => {
@@ -180,37 +114,6 @@ const Categories = () => {
       });
     },
   });
-
-  const reorderMutation = useMutation({
-    mutationFn: categoriesApi.reorder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to reorder categories',
-        variant: 'destructive',
-      });
-    },
-  });
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const oldIndex = categories.findIndex((cat) => cat.id === active.id);
-      const newIndex = categories.findIndex((cat) => cat.id === over.id);
-
-      const newOrder = arrayMove(categories, oldIndex, newIndex);
-      const reorderData = newOrder.map((cat, index) => ({
-        id: cat.id,
-        display_order: index,
-      }));
-
-      reorderMutation.mutate(reorderData);
-    }
-  };
 
   const validateForm = (): boolean => {
     const errors: Partial<CategoryFormData> = {};
@@ -283,7 +186,7 @@ const Categories = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
-          <p className="text-gray-600 mt-2">Manage product categories - Drag to reorder</p>
+          <p className="text-gray-600 mt-2">Manage product categories</p>
         </div>
         <Button onClick={handleOpenAdd}>
           <Plus className="h-4 w-4 mr-2" />
@@ -302,29 +205,39 @@ const Categories = () => {
           </CardContent>
         </Card>
       ) : (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={categories.map(cat => cat.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categories.map((category) => (
-                <SortableCategoryCard
-                  key={category.id}
-                  category={category}
-                  onEdit={handleOpenEdit}
-                  onDelete={handleOpenDelete}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {categories.map((category) => (
+            <Card key={category.id}>
+              <CardHeader>
+                <CardTitle className="text-lg">{category.name_en}</CardTitle>
+                <CardDescription>{category.name_kn}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenEdit(category)}
+                  >
+                    <Pencil className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenDelete(category)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
 
+      {/* Add/Edit Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>
           <DialogHeader>
@@ -356,7 +269,7 @@ const Categories = () => {
                   id="name_kn"
                   value={formData.name_kn}
                   onChange={(e) => setFormData({ ...formData, name_kn: e.target.value })}
-                  placeholder="ಕನ್ನಡ ಹೆಸರು ನಮೂದಿಸಿ"
+                  placeholder="à²•à²¨à³à²¨à²¡ à²¹à³†à²¸à²°à³ à²¨à²®à³‚à²¦à²¿à²¸à²¿"
                   disabled={isSubmitting}
                 />
                 {formErrors.name_kn && (
@@ -382,6 +295,7 @@ const Categories = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -409,3 +323,4 @@ const Categories = () => {
 };
 
 export default Categories;
+

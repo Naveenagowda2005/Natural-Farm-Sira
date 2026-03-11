@@ -13,6 +13,7 @@ import {
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { ReorderCategoriesDto } from './dto/reorder-categories.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Category } from './category.entity';
 
@@ -37,6 +38,13 @@ export class CategoriesController {
   @UseGuards(JwtAuthGuard)
   async findAll(): Promise<Category[]> {
     return this.categoriesService.findAll();
+  }
+
+  @Put('reorder')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async reorder(@Body() reorderDto: ReorderCategoriesDto): Promise<void> {
+    return this.categoriesService.reorder(reorderDto.categories);
   }
 
   @Get(':id')

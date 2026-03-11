@@ -42,7 +42,7 @@ export class SubCategoriesService {
     const { data, error } = await supabase
       .from('subcategories')
       .select('*')
-      .order('category_id', { ascending: true })
+      .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -51,6 +51,7 @@ export class SubCategoriesService {
 
     return data || [];
   }
+
 
   async findOne(id: string): Promise<SubCategory> {
     const supabase = this.supabaseService.getClient();
@@ -130,6 +131,22 @@ export class SubCategoriesService {
 
     if (error) {
       DatabaseErrorHandler.handleError(error, 'delete subcategory');
+    }
+  }
+
+  async reorder(subcategories: { id: string; display_order: number }[]): Promise<void> {
+    const supabase = this.supabaseService.getClient();
+
+    // Update each subcategory's display_order
+    for (const item of subcategories) {
+      const { error } = await supabase
+        .from('subcategories')
+        .update({ display_order: item.display_order })
+        .eq('id', item.id);
+
+      if (error) {
+        DatabaseErrorHandler.handleError(error, 'reorder subcategories');
+      }
     }
   }
 }
