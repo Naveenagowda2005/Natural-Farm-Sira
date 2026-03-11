@@ -49,7 +49,6 @@ export interface Category {
   id: string;
   name_en: string;
   name_kn: string;
-  display_order: number;
   created_at: string;
   updated_at: string;
 }
@@ -100,15 +99,6 @@ export const categoriesApi = {
     });
     return handleResponse(response);
   },
-
-  reorder: async (categories: { id: string; display_order: number }[]): Promise<Category[]> => {
-    const response = await fetch(`${API_BASE_URL}/api/categories/reorder`, {
-      method: 'PUT',
-      headers: getHeaders(),
-      body: JSON.stringify({ categories }),
-    });
-    return handleResponse(response);
-  },
 };
 
 // ============= SubCategories API =============
@@ -117,7 +107,6 @@ export interface SubCategory {
   name_en: string;
   name_kn: string;
   category_id: string;
-  display_order: number;
   created_at: string;
   updated_at: string;
 }
@@ -168,15 +157,6 @@ export const subCategoriesApi = {
     });
     return handleResponse(response);
   },
-
-  reorder: async (subcategories: { id: string; display_order: number }[]): Promise<SubCategory[]> => {
-    const response = await fetch(`${API_BASE_URL}/api/subcategories/reorder`, {
-      method: 'PUT',
-      headers: getHeaders(),
-      body: JSON.stringify({ subcategories }),
-    });
-    return handleResponse(response);
-  },
 };
 
 // ============= Products API =============
@@ -190,7 +170,6 @@ export interface Product {
   subcategory_id: string;
   is_visible: boolean;
   image_url?: string;
-  display_order: number;
   created_at: string;
   updated_at: string;
 }
@@ -282,15 +261,6 @@ export const productsApi = {
       method: 'POST',
       headers: getHeaders(false), // Don't include Content-Type for FormData
       body: formData,
-    });
-    return handleResponse(response);
-  },
-
-  reorder: async (products: { id: string; display_order: number }[]): Promise<Product[]> => {
-    const response = await fetch(`${API_BASE_URL}/api/products/reorder`, {
-      method: 'PUT',
-      headers: getHeaders(),
-      body: JSON.stringify({ products }),
     });
     return handleResponse(response);
   },

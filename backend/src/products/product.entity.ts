@@ -8,7 +8,6 @@ export interface Product {
   mrp: number | null;
   image_url: string | null;
   is_visible: boolean;
-  display_order: number;
   created_at: Date;
   updated_at: Date;
 }

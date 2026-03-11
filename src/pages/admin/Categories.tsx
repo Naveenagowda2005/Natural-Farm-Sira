@@ -24,7 +24,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Loader2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 
 interface CategoryFormData {
   name_en: string;
@@ -112,25 +112,6 @@ const Categories = () => {
     },
   });
 
-  // Reorder mutation
-  const reorderMutation = useMutation({
-    mutationFn: categoriesApi.reorder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast({
-        title: 'Success',
-        description: 'Category order updated',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update category order',
-        variant: 'destructive',
-      });
-    },
-  });
-
   const validateForm = (): boolean => {
     const errors: Partial<CategoryFormData> = {};
     
@@ -195,34 +176,6 @@ const Categories = () => {
     }
   };
 
-  const handleMoveUp = (index: number) => {
-    if (index === 0) return;
-    
-    const newCategories = [...categories];
-    [newCategories[index - 1], newCategories[index]] = [newCategories[index], newCategories[index - 1]];
-    
-    const reorderedCategories = newCategories.map((category, idx) => ({
-      id: category.id,
-      display_order: idx,
-    }));
-    
-    reorderMutation.mutate(reorderedCategories);
-  };
-
-  const handleMoveDown = (index: number) => {
-    if (index === categories.length - 1) return;
-    
-    const newCategories = [...categories];
-    [newCategories[index], newCategories[index + 1]] = [newCategories[index + 1], newCategories[index]];
-    
-    const reorderedCategories = newCategories.map((category, idx) => ({
-      id: category.id,
-      display_order: idx,
-    }));
-    
-    reorderMutation.mutate(reorderedCategories);
-  };
-
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
@@ -249,64 +202,35 @@ const Categories = () => {
           </CardContent>
         </Card>
       ) : (
-        <div>
-          <p className="text-sm text-gray-600 mb-4">
-            Use the up/down arrows to reorder categories. The order will be saved automatically.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categories.map((category, index) => (
-              <Card key={category.id}>
-                <CardHeader>
-                  <div className="flex items-start gap-2">
-                    <div className="flex flex-col gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleMoveUp(index)}
-                        disabled={index === 0 || reorderMutation.isPending}
-                        className="h-6 w-6"
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleMoveDown(index)}
-                        disabled={index === categories.length - 1 || reorderMutation.isPending}
-                        className="h-6 w-6"
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{category.name_en}</CardTitle>
-                      <CardDescription>{category.name_kn}</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenEdit(category)}
-                    >
-                      <Pencil className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenDelete(category)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {categories.map((category) => (
+            <Card key={category.id}>
+              <CardHeader>
+                <CardTitle className="text-lg">{category.name_en}</CardTitle>
+                <CardDescription>{category.name_kn}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenEdit(category)}
+                  >
+                    <Pencil className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenDelete(category)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 

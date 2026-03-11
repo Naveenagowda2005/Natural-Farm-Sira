@@ -4,7 +4,6 @@ import { StorageService, StorageBucket } from '../storage/storage.service';
 import { Product } from './product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ReorderProductsDto } from './dto/reorder-products.dto';
 import { DatabaseErrorHandler } from '../common/utils/database-error.handler';
 
 @Injectable()
@@ -28,22 +27,10 @@ export class ProductsService {
       throw new BadRequestException('Subcategory not found');
     }
 
-    // Get the next display order for this subcategory
-    const { data: maxOrderData } = await supabase
-      .from('products')
-      .select('display_order')
-      .eq('subcategory_id', createProductDto.subcategory_id)
-      .order('display_order', { ascending: false })
-      .limit(1)
-      .single();
-
-    const nextOrder = maxOrderData ? maxOrderData.display_order + 1 : 0;
-
     // Set default value for is_visible if not provided
     const productData = {
       ...createProductDto,
       is_visible: createProductDto.is_visible ?? true,
-      display_order: nextOrder,
     };
 
     const { data, error } = await supabase
@@ -65,7 +52,7 @@ export class ProductsService {
     let query = supabase
       .from('products')
       .select('*')
-      .order('display_order', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (filters?.subcategory_id) {
       query = query.eq('subcategory_id', filters.subcategory_id);
@@ -222,24 +209,5 @@ export class ProductsService {
     }
 
     return data;
-  }
-
-  async reorder(reorderDto: ReorderProductsDto): Promise<Product[]> {
-    const supabase = this.supabaseService.getClient();
-
-    // Update each product's display_order
-    for (const item of reorderDto.products) {
-      const { error } = await supabase
-        .from('products')
-        .update({ display_order: item.display_order })
-        .eq('id', item.id);
-
-      if (error) {
-        DatabaseErrorHandler.handleError(error, 'reorder products');
-      }
-    }
-
-    // Return updated list
-    return this.findAll();
   }
 }

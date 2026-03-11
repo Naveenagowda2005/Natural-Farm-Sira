@@ -37,7 +37,7 @@ const About = () => {
             </h1>
             <p className="text-muted-foreground text-lg md:text-xl leading-relaxed animate-fade-in-up stagger-1">
               {t(
-                'We are a trusted agricultural supply business based in Sira, Tumkur, India. Since 2020, we have been providing quality farm machines, Napier Sticks, livestock accessories, and premium seeds to farmers across the region. Our commitment to quality and customer satisfaction has made us a preferred choice for agricultural needs in India.',
+                'We are a trusted agricultural supply business based in Sira, Tumkur, India. Since 2020, we have been providing quality farm machines, livestock accessories, and premium seeds to farmers across the region. Our commitment to quality and customer satisfaction has made us a preferred choice for agricultural needs in India.',
                 'ನಾವು ಸಿರಾ, ತುಮಕೂರು, ಭಾರತದಲ್ಲಿ ನೆಲೆಗೊಂಡಿರುವ ವಿಶ್ವಾಸಾರ್ಹ ಕೃಷಿ ಸರಬರಾಜು ವ್ಯಾಪಾರ. 2020 ರಿಂದ, ಪ್ರದೇಶದ ರೈತರಿಗೆ ಗುಣಮಟ್ಟದ ಕೃಷಿ ಯಂತ್ರಗಳು, ಪಶುಸಂಗೋಪನೆ ಸಲಕರಣೆಗಳು ಮತ್ತು ಪ್ರೀಮಿಯಂ ಬೀಜಗಳನ್ನು ಒದಗಿಸುತ್ತಿದ್ದೇವೆ. ಗುಣಮಟ್ಟ ಮತ್ತು ಗ್ರಾಹಕ ತೃಪ್ತಿಗೆ ನಮ್ಮ ಬದ್ಧತೆಯು ನಮ್ಮನ್ನು ಭಾರತದಲ್ಲಿ ಕೃಷಿ ಅಗತ್ಯಗಳಿಗೆ ಆದ್ಯತೆಯ ಆಯ್ಕೆಯಾಗಿಸಿದೆ.'
               )}
             </p>
@@ -175,40 +175,16 @@ const About = () => {
           </div>
           
           <div className="max-w-4xl mx-auto">
-            <a 
-              href="https://maps.app.goo.gl/AG61BvBpDjr2nZZT6"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block"
-            >
-              <div className="glass-card rounded-2xl overflow-hidden hover-lift-glow animate-fade-in-up cursor-pointer relative group">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3876.8847654321!2d76.89876!3d13.7389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bb02d6f0d0d0d0d%3A0x0!2sSira%20Town!5e0!3m2!1sen!2sin!4v1234567890"
-                  width="100%"
-                  height="400"
-                  style={{ border: 0, pointerEvents: 'none' }}
-                  allowFullScreen
-                  loading="lazy"
-                  title="Natural Farm Sira Location"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 px-4 py-2 rounded-lg">
-                    <span className="text-sm font-semibold text-primary">Click to open in Google Maps</span>
-                  </div>
-                </div>
-              </div>
-            </a>
-            
-            <div className="mt-6 text-center">
-              <a
-                href="https://maps.app.goo.gl/AG61BvBpDjr2nZZT6"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                <MapPin className="w-5 h-5" />
-                {t('Open in Google Maps', 'ಗೂಗಲ್ ಮ್ಯಾಪ್ಸ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ')}
-              </a>
+            <div className="glass-card rounded-2xl overflow-hidden hover-lift-glow animate-fade-in-up">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3876.123!2d76.9!3d13.74!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sSira%2C+Tumkur%2C+Karnataka!5e0!3m2!1sen!2sin!4v1"
+                width="100%"
+                height="400"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                title="Natural Farm Sira Location"
+              />
             </div>
             
             <div className="mt-8 grid md:grid-cols-2 gap-6">

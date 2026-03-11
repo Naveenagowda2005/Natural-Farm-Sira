@@ -1,5 +1,5 @@
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Phone, MapPin, MessageCircle, Instagram, Facebook, Youtube, Mail, Clock, ArrowRight } from 'lucide-react';
+import { Phone, MapPin, MessageCircle, Instagram, Facebook, Mail, Clock, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -47,17 +47,14 @@ const Footer = () => {
             </p>
             {/* Social Links */}
             <div className="flex gap-3">
-              <a href="https://www.facebook.com/omkar.gowda.779?mibextid=ZbWKwL" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-[#1877F2] flex items-center justify-center hover:bg-[#1877F2]/80 transition-all hover:scale-110">
-                <Facebook className="w-5 h-5 text-white" />
+              <a href="#" className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all hover:scale-110">
+                <Facebook className="w-5 h-5" />
               </a>
-              <a href="https://instagram.com/natural_farm_sira?igshid=ZDc4ODBmNjlmNQ==" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#833AB4] via-[#E1306C] to-[#F77737] flex items-center justify-center hover:opacity-80 transition-all hover:scale-110">
-                <Instagram className="w-5 h-5 text-white" />
+              <a href="#" className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all hover:scale-110">
+                <Instagram className="w-5 h-5" />
               </a>
-              <a href="https://youtube.com/@naturalfarmsira" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-[#FF0000] flex items-center justify-center hover:bg-[#FF0000]/80 transition-all hover:scale-110">
-                <Youtube className="w-5 h-5 text-white" />
-              </a>
-              <a href="https://wa.me/918660674360" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-[#25D366] flex items-center justify-center hover:bg-[#25D366]/80 transition-all hover:scale-110">
-                <MessageCircle className="w-5 h-5 text-white" />
+              <a href="https://wa.me/918660674360" className="w-10 h-10 rounded-xl bg-whatsapp flex items-center justify-center hover:bg-whatsapp/80 transition-all hover:scale-110">
+                <MessageCircle className="w-5 h-5" />
               </a>
             </div>
           </div>

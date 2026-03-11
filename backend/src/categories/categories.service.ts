@@ -3,7 +3,6 @@ import { SupabaseService } from '../supabase/supabase.service';
 import { Category } from './category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { ReorderCategoriesDto } from './dto/reorder-categories.dto';
 import { DatabaseErrorHandler } from '../common/utils/database-error.handler';
 
 @Injectable()
@@ -13,19 +12,9 @@ export class CategoriesService {
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
     const supabase = this.supabaseService.getClient();
 
-    // Get the next display order
-    const { data: maxOrderData } = await supabase
-      .from('categories')
-      .select('display_order')
-      .order('display_order', { ascending: false })
-      .limit(1)
-      .single();
-
-    const nextOrder = maxOrderData ? maxOrderData.display_order + 1 : 0;
-
     const { data, error } = await supabase
       .from('categories')
-      .insert([{ ...createCategoryDto, display_order: nextOrder }])
+      .insert([createCategoryDto])
       .select()
       .single();
 
@@ -42,7 +31,7 @@ export class CategoriesService {
     const { data, error } = await supabase
       .from('categories')
       .select('*')
-      .order('display_order', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (error) {
       DatabaseErrorHandler.handleError(error, 'fetch categories');
@@ -117,24 +106,5 @@ export class CategoriesService {
     if (error) {
       DatabaseErrorHandler.handleError(error, 'delete category');
     }
-  }
-
-  async reorder(reorderDto: ReorderCategoriesDto): Promise<Category[]> {
-    const supabase = this.supabaseService.getClient();
-
-    // Update each category's display_order
-    for (const item of reorderDto.categories) {
-      const { error } = await supabase
-        .from('categories')
-        .update({ display_order: item.display_order })
-        .eq('id', item.id);
-
-      if (error) {
-        DatabaseErrorHandler.handleError(error, 'reorder categories');
-      }
-    }
-
-    // Return updated list
-    return this.findAll();
   }
 }

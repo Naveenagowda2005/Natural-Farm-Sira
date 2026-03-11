@@ -3,7 +3,6 @@ export interface SubCategory {
   category_id: string;
   name_en: string;
   name_kn: string;
-  display_order: number;
   created_at: Date;
   updated_at: Date;
 }

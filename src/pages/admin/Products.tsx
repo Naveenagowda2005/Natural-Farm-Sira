@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Loader2, Package, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Package } from 'lucide-react';
 
 interface ProductFormData {
   name_en: string;
@@ -134,25 +134,6 @@ const Products = () => {
     },
   });
 
-  // Reorder mutation
-  const reorderMutation = useMutation({
-    mutationFn: productsApi.reorder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast({
-        title: 'Success',
-        description: 'Product order updated',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update product order',
-        variant: 'destructive',
-      });
-    },
-  });
-
   const validateForm = (): boolean => {
     const errors: Partial<ProductFormData> = {};
     if (!formData.name_en.trim()) errors.name_en = 'English name is required';
@@ -248,34 +229,6 @@ const Products = () => {
     toggleVisibilityMutation.mutate({ id: product.id, is_visible: !product.is_visible });
   };
 
-  const handleMoveUp = (index: number) => {
-    if (index === 0) return;
-    
-    const newProducts = [...products];
-    [newProducts[index - 1], newProducts[index]] = [newProducts[index], newProducts[index - 1]];
-    
-    const reorderedProducts = newProducts.map((product, idx) => ({
-      id: product.id,
-      display_order: idx,
-    }));
-    
-    reorderMutation.mutate(reorderedProducts);
-  };
-
-  const handleMoveDown = (index: number) => {
-    if (index === products.length - 1) return;
-    
-    const newProducts = [...products];
-    [newProducts[index], newProducts[index + 1]] = [newProducts[index + 1], newProducts[index]];
-    
-    const reorderedProducts = newProducts.map((product, idx) => ({
-      id: product.id,
-      display_order: idx,
-    }));
-    
-    reorderMutation.mutate(reorderedProducts);
-  };
-
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
 
@@ -326,125 +279,76 @@ const Products = () => {
           </CardContent>
         </Card>
       ) : (
-        <div>
-          <p className="text-sm text-gray-600 mb-4">
-            Use the up/down arrows to reorder products. The order will be saved automatically.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product, index) => (
-              <Card 
-                key={product.id} 
-                className="glass-card hover-lift-glow group overflow-hidden animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {product.image_url && (
-                  <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
-                    <img 
-                      src={product.image_url} 
-                      alt={product.name_en} 
-                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" 
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    
-                    {/* Floating Badge */}
-                    <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg animate-bounce-in">
-                      <span className="text-sm font-bold text-primary">₹{product.price}</span>
-                    </div>
-
-                    {/* Reorder Buttons */}
-                    <div className="absolute top-4 left-4 flex flex-col gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleMoveUp(index)}
-                        disabled={index === 0 || reorderMutation.isPending}
-                        className="h-8 w-8 bg-white/90 backdrop-blur-sm hover:bg-white"
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleMoveDown(index)}
-                        disabled={index === products.length - 1 || reorderMutation.isPending}
-                        className="h-8 w-8 bg-white/90 backdrop-blur-sm hover:bg-white"
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map((product, index) => (
+            <Card 
+              key={product.id} 
+              className="glass-card hover-lift-glow group overflow-hidden animate-fade-in-up"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              {product.image_url && (
+                <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
+                  <img 
+                    src={product.image_url} 
+                    alt={product.name_en} 
+                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  {/* Floating Badge */}
+                  <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg animate-bounce-in">
+                    <span className="text-sm font-bold text-primary">₹{product.price}</span>
                   </div>
-                )}
-                <CardHeader className="relative">
-                  {!product.image_url && (
-                    <div className="absolute -top-2 left-0 flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleMoveUp(index)}
-                        disabled={index === 0 || reorderMutation.isPending}
-                        className="h-6 w-6"
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleMoveDown(index)}
-                        disabled={index === products.length - 1 || reorderMutation.isPending}
-                        className="h-6 w-6"
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
+                </div>
+              )}
+              <CardHeader className="relative">
+                <CardTitle className="text-lg group-hover:text-primary transition-colors duration-300">{product.name_en}</CardTitle>
+                <p className="text-sm text-gray-600">{product.name_kn}</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 mb-4">
+                  <div className="flex justify-between items-center text-sm p-3 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5">
+                    <span className="text-gray-600 font-medium">Price:</span>
+                    <span className="font-bold text-primary text-lg">₹{product.price}</span>
+                  </div>
+                  {product.mrp && (
+                    <div className="flex justify-between items-center text-sm p-3 rounded-lg bg-gray-50">
+                      <span className="text-gray-600 font-medium">MRP:</span>
+                      <span className="line-through text-gray-500">₹{product.mrp}</span>
                     </div>
                   )}
-                  <CardTitle className="text-lg group-hover:text-primary transition-colors duration-300">{product.name_en}</CardTitle>
-                  <p className="text-sm text-gray-600">{product.name_kn}</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 mb-4">
-                    <div className="flex justify-between items-center text-sm p-3 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5">
-                      <span className="text-gray-600 font-medium">Price:</span>
-                      <span className="font-bold text-primary text-lg">₹{product.price}</span>
-                    </div>
-                    {product.mrp && (
-                      <div className="flex justify-between items-center text-sm p-3 rounded-lg bg-gray-50">
-                        <span className="text-gray-600 font-medium">MRP:</span>
-                        <span className="line-through text-gray-500">₹{product.mrp}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between text-sm p-3 rounded-lg bg-gradient-to-r from-gray-50 to-transparent">
-                      <span className="text-gray-600 font-medium">Visible:</span>
-                      <Switch 
-                        checked={product.is_visible} 
-                        onCheckedChange={() => handleToggleVisibility(product)}
-                        className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-primary data-[state=checked]:to-accent"
-                      />
-                    </div>
+                  <div className="flex items-center justify-between text-sm p-3 rounded-lg bg-gradient-to-r from-gray-50 to-transparent">
+                    <span className="text-gray-600 font-medium">Visible:</span>
+                    <Switch 
+                      checked={product.is_visible} 
+                      onCheckedChange={() => handleToggleVisibility(product)}
+                      className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-primary data-[state=checked]:to-accent"
+                    />
                   </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => handleOpenEdit(product)}
-                      className="flex-1 hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 group/btn"
-                    >
-                      <Pencil className="h-4 w-4 mr-1 transition-transform duration-300 group-hover/btn:scale-110" />
-                      Edit
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => handleOpenDelete(product)}
-                      className="flex-1 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-300 group/btn"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1 transition-transform duration-300 group-hover/btn:scale-110" />
-                      Delete
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleOpenEdit(product)}
+                    className="flex-1 hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 group/btn"
+                  >
+                    <Pencil className="h-4 w-4 mr-1 transition-transform duration-300 group-hover/btn:scale-110" />
+                    Edit
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleOpenDelete(product)}
+                    className="flex-1 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-300 group/btn"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1 transition-transform duration-300 group-hover/btn:scale-110" />
+                    Delete
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 

@@ -31,7 +31,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Loader2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 
 interface SubCategoryFormData {
   name_en: string;
@@ -140,25 +140,6 @@ const SubCategories = () => {
     },
   });
 
-  // Reorder mutation
-  const reorderMutation = useMutation({
-    mutationFn: subCategoriesApi.reorder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subcategories'] });
-      toast({
-        title: 'Success',
-        description: 'Subcategory order updated',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update subcategory order',
-        variant: 'destructive',
-      });
-    },
-  });
-
   const validateForm = (): boolean => {
     const errors: Partial<SubCategoryFormData> = {};
     
@@ -228,34 +209,6 @@ const SubCategories = () => {
     }
   };
 
-  const handleMoveUp = (categoryId: string, index: number, subs: SubCategory[]) => {
-    if (index === 0) return;
-    
-    const newSubs = [...subs];
-    [newSubs[index - 1], newSubs[index]] = [newSubs[index], newSubs[index - 1]];
-    
-    const reorderedSubs = newSubs.map((sub, idx) => ({
-      id: sub.id,
-      display_order: idx,
-    }));
-    
-    reorderMutation.mutate(reorderedSubs);
-  };
-
-  const handleMoveDown = (categoryId: string, index: number, subs: SubCategory[]) => {
-    if (index === subs.length - 1) return;
-    
-    const newSubs = [...subs];
-    [newSubs[index], newSubs[index + 1]] = [newSubs[index + 1], newSubs[index]];
-    
-    const reorderedSubs = newSubs.map((sub, idx) => ({
-      id: sub.id,
-      display_order: idx,
-    }));
-    
-    reorderMutation.mutate(reorderedSubs);
-  };
-
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
@@ -289,9 +242,6 @@ const SubCategories = () => {
         </Card>
       ) : (
         <div className="space-y-6">
-          <p className="text-sm text-gray-600">
-            Use the up/down arrows to reorder subcategories within each category. The order will be saved automatically.
-          </p>
           {Object.values(groupedSubCategories).map(({ category, subCategories: subs }) => (
             subs.length > 0 && (
               <div key={category.id}>
@@ -299,35 +249,11 @@ const SubCategories = () => {
                   {category.name_en} ({category.name_kn})
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {subs.map((subCategory, index) => (
+                  {subs.map((subCategory) => (
                     <Card key={subCategory.id}>
                       <CardHeader>
-                        <div className="flex items-start gap-2">
-                          <div className="flex flex-col gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleMoveUp(category.id, index, subs)}
-                              disabled={index === 0 || reorderMutation.isPending}
-                              className="h-6 w-6"
-                            >
-                              <ChevronUp className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleMoveDown(category.id, index, subs)}
-                              disabled={index === subs.length - 1 || reorderMutation.isPending}
-                              className="h-6 w-6"
-                            >
-                              <ChevronDown className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <div className="flex-1">
-                            <CardTitle className="text-lg">{subCategory.name_en}</CardTitle>
-                            <CardDescription>{subCategory.name_kn}</CardDescription>
-                          </div>
-                        </div>
+                        <CardTitle className="text-lg">{subCategory.name_en}</CardTitle>
+                        <CardDescription>{subCategory.name_kn}</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="flex gap-2">
