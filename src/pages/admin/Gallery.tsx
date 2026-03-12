@@ -16,7 +16,65 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Loader2, GripVertical } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+interface SortableImageProps {
+  image: GalleryImage;
+  isSelected: boolean;
+  onToggle: (id: string) => void;
+}
+
+const SortableImage = ({ image, isSelected, onToggle }: SortableImageProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: image.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card ref={setNodeRef} style={style} className={isDragging ? 'shadow-lg' : 'relative group'}>
+      <CardContent className="p-2">
+        <div className="absolute top-4 left-4 z-10">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={() => onToggle(image.id)}
+            className="bg-white"
+          />
+        </div>
+        <button
+          className="absolute top-4 right-4 z-10 cursor-grab active:cursor-grabbing touch-none bg-white rounded p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-5 w-5 text-gray-600" />
+        </button>
+        <img
+          src={image.image_url}
+          alt="Gallery"
+          className="w-full h-48 object-cover rounded cursor-pointer"
+          onClick={() => onToggle(image.id)}
+        />
+        <div className="mt-2">
+          <p className="text-xs text-gray-500 truncate">
+            {new Date(image.created_at).toLocaleDateString()}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const Gallery = () => {
   const { toast } = useToast();
@@ -25,6 +83,13 @@ const Gallery = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
   const [isUploading, setIsUploading] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Fetch gallery images
   const { data: images = [], isLoading } = useQuery({
@@ -70,6 +135,25 @@ const Gallery = () => {
       toast({
         title: 'Error',
         description: error.message || 'Failed to delete images',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Reorder mutation
+  const reorderMutation = useMutation({
+    mutationFn: galleryApi.reorder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gallery'] });
+      toast({
+        title: 'Success',
+        description: 'Gallery order updated',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update gallery order',
         variant: 'destructive',
       });
     },
@@ -150,12 +234,29 @@ const Gallery = () => {
     bulkDeleteMutation.mutate(Array.from(selectedImages));
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = images.findIndex((image) => image.id === active.id);
+      const newIndex = images.findIndex((image) => image.id === over.id);
+
+      const newOrder = arrayMove(images, oldIndex, newIndex);
+      const reorderedImages = newOrder.map((image, idx) => ({
+        id: image.id,
+        display_order: idx,
+      }));
+
+      reorderMutation.mutate(reorderedImages);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gallery</h1>
-          <p className="text-gray-600 mt-2">Manage gallery images</p>
+          <p className="text-gray-600 mt-2">Manage gallery images - Drag to reorder</p>
         </div>
         {selectedImages.size > 0 && (
           <Button variant="destructive" onClick={handleOpenDelete}>
@@ -215,35 +316,30 @@ const Gallery = () => {
               {selectedImages.size === images.length ? 'Deselect All' : 'Select All'}
             </Button>
             <p className="text-sm text-gray-600">
-              {images.length} image(s) total
+              {images.length} image(s) total - Drag images to reorder
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images.map((image) => (
-              <Card key={image.id} className="relative group">
-                <CardContent className="p-2">
-                  <div className="absolute top-4 left-4 z-10">
-                    <Checkbox
-                      checked={selectedImages.has(image.id)}
-                      onCheckedChange={() => handleToggleImage(image.id)}
-                      className="bg-white"
-                    />
-                  </div>
-                  <img
-                    src={image.image_url}
-                    alt="Gallery"
-                    className="w-full h-48 object-cover rounded cursor-pointer"
-                    onClick={() => handleToggleImage(image.id)}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={images.map(image => image.id)}
+              strategy={rectSortingStrategy}
+            >
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {images.map((image) => (
+                  <SortableImage
+                    key={image.id}
+                    image={image}
+                    isSelected={selectedImages.has(image.id)}
+                    onToggle={handleToggleImage}
                   />
-                  <div className="mt-2">
-                    <p className="text-xs text-gray-500 truncate">
-                      {new Date(image.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         </div>
       )}
 

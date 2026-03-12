@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { VideosService } from './videos.service';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
+import { ReorderVideosDto } from './dto/reorder-videos.dto';
 
 @Controller('api/videos')
 export class VideosController {
@@ -39,6 +40,13 @@ export class VideosController {
   @Get('public')
   async findAllPublic() {
     return this.videosService.findAll();
+  }
+
+  @Put('reorder')
+  @UseGuards(JwtAuthGuard)
+  async reorder(@Body() reorderDto: ReorderVideosDto) {
+    await this.videosService.reorder(reorderDto.videos);
+    return { message: 'Videos reordered successfully' };
   }
 
   @Put(':id')

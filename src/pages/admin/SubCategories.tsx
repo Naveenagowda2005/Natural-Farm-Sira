@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subCategoriesApi, categoriesApi, SubCategory } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Loader2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, GripVertical } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface SubCategoryFormData {
   name_en: string;
@@ -39,7 +42,69 @@ interface SubCategoryFormData {
   category_id: string;
 }
 
+interface SortableSubCategoryProps {
+  subCategory: SubCategory;
+  getCategoryName: (categoryId: string) => string;
+  onEdit: (subCategory: SubCategory) => void;
+  onDelete: (subCategory: SubCategory) => void;
+}
+
+const SortableSubCategory = ({ subCategory, getCategoryName, onEdit, onDelete }: SortableSubCategoryProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: subCategory.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card ref={setNodeRef} style={style} className={isDragging ? 'shadow-lg' : 'relative group'}>
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <CardTitle className="text-lg">{subCategory.name_en}</CardTitle>
+            <CardDescription>
+              {subCategory.name_kn}
+              <br />
+              <span className="text-xs text-gray-500">Category: {getCategoryName(subCategory.category_id)}</span>
+            </CardDescription>
+          </div>
+          <button
+            className="cursor-grab active:cursor-grabbing touch-none p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-5 w-5 text-gray-600" />
+          </button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={() => onEdit(subCategory)}>
+            <Pencil className="h-4 w-4 mr-1" />
+            Edit
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => onDelete(subCategory)}>
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 const SubCategories = () => {
+  console.log('🚀 NEW SubCategories with Drag & Drop loaded!');
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -52,6 +117,13 @@ const SubCategories = () => {
     category_id: '',
   });
   const [formErrors, setFormErrors] = useState<Partial<SubCategoryFormData>>({});
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const { data: subCategories = [], isLoading } = useQuery({
     queryKey: ['subcategories'],
@@ -104,24 +176,31 @@ const SubCategories = () => {
     mutationFn: subCategoriesApi.reorder,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subcategories'] });
+      toast({
+        title: 'Success',
+        description: 'SubCategories order updated',
+      });
     },
     onError: (error: any) => {
       toast({ title: 'Error', description: error.message || 'Failed to reorder', variant: 'destructive' });
     },
   });
 
-  const handleMoveUp = (index: number) => {
-    if (index === 0) return;
-    const newOrder = [...subCategories];
-    [newOrder[index], newOrder[index - 1]] = [newOrder[index - 1], newOrder[index]];
-    reorderMutation.mutate(newOrder.map((item, idx) => ({ id: item.id, display_order: idx })));
-  };
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-  const handleMoveDown = (index: number) => {
-    if (index === subCategories.length - 1) return;
-    const newOrder = [...subCategories];
-    [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
-    reorderMutation.mutate(newOrder.map((item, idx) => ({ id: item.id, display_order: idx })));
+    if (over && active.id !== over.id) {
+      const oldIndex = subCategories.findIndex((subCategory) => subCategory.id === active.id);
+      const newIndex = subCategories.findIndex((subCategory) => subCategory.id === over.id);
+
+      const newOrder = arrayMove(subCategories, oldIndex, newIndex);
+      const reorderedSubCategories = newOrder.map((subCategory, idx) => ({
+        id: subCategory.id,
+        display_order: idx,
+      }));
+
+      reorderMutation.mutate(reorderedSubCategories);
+    }
   };
 
   const validateForm = (): boolean => {
@@ -184,8 +263,8 @@ const SubCategories = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">SubCategories</h1>
-          <p className="text-gray-600 mt-2">Manage product subcategories</p>
+          <h1 className="text-3xl font-bold text-gray-900">SubCategories 🎯 DRAG & DROP v2.0</h1>
+          <p className="text-gray-600 mt-2">Manage product subcategories - Drag to reorder</p>
         </div>
         <Button onClick={handleOpenAdd}>
           <Plus className="h-4 w-4 mr-2" />
@@ -204,37 +283,34 @@ const SubCategories = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {subCategories.map((subCategory, index) => (
-            <Card key={subCategory.id}>
-              <CardHeader>
-                <CardTitle className="text-lg">{subCategory.name_en}</CardTitle>
-                <CardDescription>
-                  {subCategory.name_kn}
-                  <br />
-                  <span className="text-xs text-gray-500">Category: {getCategoryName(subCategory.category_id)}</span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2 flex-wrap">
-                  <Button variant="outline" size="sm" onClick={() => handleMoveUp(index)} disabled={index === 0 || reorderMutation.isPending}>
-                    <ChevronUp className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleMoveDown(index)} disabled={index === subCategories.length - 1 || reorderMutation.isPending}>
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleOpenEdit(subCategory)}>
-                    <Pencil className="h-4 w-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleOpenDelete(subCategory)}>
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm text-gray-600">
+              {subCategories.length} subcategory(ies) total - Drag subcategories to reorder
+            </p>
+          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={subCategories.map(subCategory => subCategory.id)}
+              strategy={rectSortingStrategy}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {subCategories.map((subCategory) => (
+                  <SortableSubCategory
+                    key={subCategory.id}
+                    subCategory={subCategory}
+                    getCategoryName={getCategoryName}
+                    onEdit={handleOpenEdit}
+                    onDelete={handleOpenDelete}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         </div>
       )}
 

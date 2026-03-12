@@ -126,11 +126,11 @@ const Products = () => {
     })
   );
 
-  const { data: products = [], isLoading, refetch } = useQuery({
+  const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
     queryFn: () => productsApi.getAll(),
-    staleTime: 0,
-    refetchOnMount: true,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnMount: false,
   });
 
   const { data: categories = [] } = useQuery({
@@ -176,7 +176,7 @@ const Products = () => {
           console.error('Failed to upload image:', error);
         }
       }
-      await refetch();
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       toast({ title: 'Success', description: 'Product created successfully' });
       handleCloseForm();
     },
@@ -195,7 +195,7 @@ const Products = () => {
           console.error('Failed to upload image:', error);
         }
       }
-      await refetch();
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       toast({ title: 'Success', description: 'Product updated successfully' });
       handleCloseForm();
     },
@@ -233,6 +233,10 @@ const Products = () => {
     mutationFn: productsApi.reorder,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({
+        title: 'Success',
+        description: 'Products order updated',
+      });
     },
     onError: (error: any) => {
       toast({ title: 'Error', description: error.message || 'Failed to reorder products', variant: 'destructive' });
@@ -247,12 +251,12 @@ const Products = () => {
       const newIndex = filteredProducts.findIndex((prod) => prod.id === over.id);
 
       const newOrder = arrayMove(filteredProducts, oldIndex, newIndex);
-      const reorderData = newOrder.map((prod, index) => ({
+      const reorderedProducts = newOrder.map((prod, idx) => ({
         id: prod.id,
-        display_order: index,
+        display_order: idx,
       }));
 
-      reorderMutation.mutate(reorderData);
+      reorderMutation.mutate(reorderedProducts);
     }
   };
 

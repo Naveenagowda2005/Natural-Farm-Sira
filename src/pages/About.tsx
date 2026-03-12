@@ -37,8 +37,8 @@ const About = () => {
             </h1>
             <p className="text-muted-foreground text-lg md:text-xl leading-relaxed animate-fade-in-up stagger-1">
               {t(
-                'We are a trusted agricultural supply business based in Sira, Tumkur, India. Since 2020, we have been providing quality farm machines, livestock accessories, and premium seeds to farmers across the region. Our commitment to quality and customer satisfaction has made us a preferred choice for agricultural needs in India.',
-                'ನಾವು ಸಿರಾ, ತುಮಕೂರು, ಭಾರತದಲ್ಲಿ ನೆಲೆಗೊಂಡಿರುವ ವಿಶ್ವಾಸಾರ್ಹ ಕೃಷಿ ಸರಬರಾಜು ವ್ಯಾಪಾರ. 2020 ರಿಂದ, ಪ್ರದೇಶದ ರೈತರಿಗೆ ಗುಣಮಟ್ಟದ ಕೃಷಿ ಯಂತ್ರಗಳು, ಪಶುಸಂಗೋಪನೆ ಸಲಕರಣೆಗಳು ಮತ್ತು ಪ್ರೀಮಿಯಂ ಬೀಜಗಳನ್ನು ಒದಗಿಸುತ್ತಿದ್ದೇವೆ. ಗುಣಮಟ್ಟ ಮತ್ತು ಗ್ರಾಹಕ ತೃಪ್ತಿಗೆ ನಮ್ಮ ಬದ್ಧತೆಯು ನಮ್ಮನ್ನು ಭಾರತದಲ್ಲಿ ಕೃಷಿ ಅಗತ್ಯಗಳಿಗೆ ಆದ್ಯತೆಯ ಆಯ್ಕೆಯಾಗಿಸಿದೆ.'
+                'We are a trusted agricultural supply business based in Shivanayyanapalya, Sira, Tumkur, India. Since 2020, we have been providing quality Napier Sticks, farm machines, livestock accessories, and premium seeds to farmers across the region. Our commitment to quality and customer satisfaction has made us a preferred choice for agricultural needs in India.',
+                'ನಾವು ಶಿವನಯ್ಯನಪಾಳ್ಯ, ಸಿರಾ, ತುಮಕೂರು, ಭಾರತದಲ್ಲಿ ನೆಲೆಗೊಂಡಿರುವ ವಿಶ್ವಾಸಾರ್ಹ ಕೃಷಿ ಸರಬರಾಜು ವ್ಯಾಪಾರ. 2020 ರಿಂದ, ಪ್ರದೇಶದ ರೈತರಿಗೆ ಗುಣಮಟ್ಟದ ನೇಪಿಯರ್ ಕಡ್ಡಿಗಳು, ಕೃಷಿ ಯಂತ್ರಗಳು, ಪಶುಸಂಗೋಪನೆ ಸಲಕರಣೆಗಳು ಮತ್ತು ಪ್ರೀಮಿಯಂ ಬೀಜಗಳನ್ನು ಒದಗಿಸುತ್ತಿದ್ದೇವೆ. ಗುಣಮಟ್ಟ ಮತ್ತು ಗ್ರಾಹಕ ತೃಪ್ತಿಗೆ ನಮ್ಮ ಬದ್ಧತೆಯು ನಮ್ಮನ್ನು ಭಾರತದಲ್ಲಿ ಕೃಷಿ ಅಗತ್ಯಗಳಿಗೆ ಆದ್ಯತೆಯ ಆಯ್ಕೆಯಾಗಿಸಿದೆ.'
               )}
             </p>
           </div>
@@ -82,8 +82,8 @@ const About = () => {
               </h3>
               <p className="text-muted-foreground leading-relaxed">
                 {t(
-                  'To empower farmers with high-quality agricultural products, machinery, and expert guidance that enhances productivity and sustains livelihoods across India.',
-                  'ಭಾರತದಾದ್ಯಂತ ರೈತರಿಗೆ ಉತ್ಪಾದಕತೆಯನ್ನು ಹೆಚ್ಚಿಸುವ ಮತ್ತು ಜೀವನೋಪಾಯವನ್ನು ಉಳಿಸುವ ಉತ್ತಮ ಗುಣಮಟ್ಟದ ಕೃಷಿ ಉತ್ಪನ್ನಗಳು, ಯಂತ್ರಗಳು ಮತ್ತು ತಜ್ಞ ಮಾರ್ಗದರ್ಶನದೊಂದಿಗೆ ಶಕ್ತಗೊಳಿಸುವುದು.'
+                  'To empower farmers with high-quality Napier Sticks, agricultural products, machinery, and expert guidance that enhances productivity and sustains livelihoods across India.',
+                  'ಭಾರತದಾದ್ಯಂತ ರೈತರಿಗೆ ಉತ್ಪಾದಕತೆಯನ್ನು ಹೆಚ್ಚಿಸುವ ಮತ್ತು ಜೀವನೋಪಾಯವನ್ನು ಉಳಿಸುವ ಉತ್ತಮ ಗುಣಮಟ್ಟದ ನೇಪಿಯರ್ ಕಡ್ಡಿಗಳು, ಕೃಷಿ ಉತ್ಪನ್ನಗಳು, ಯಂತ್ರಗಳು ಮತ್ತು ತಜ್ಞ ಮಾರ್ಗದರ್ಶನದೊಂದಿಗೆ ಶಕ್ತಗೊಳಿಸುವುದು.'
                 )}
               </p>
             </div>
@@ -175,16 +175,41 @@ const About = () => {
           </div>
           
           <div className="max-w-4xl mx-auto">
-            <div className="glass-card rounded-2xl overflow-hidden hover-lift-glow animate-fade-in-up">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3876.123!2d76.9!3d13.74!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sSira%2C+Tumkur%2C+Karnataka!5e0!3m2!1sen!2sin!4v1"
-                width="100%"
-                height="400"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                title="Natural Farm Sira Location"
-              />
+            <a 
+              href="https://maps.app.goo.gl/AG61BvBpDjr2nZZT6"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block relative group"
+            >
+              <div className="glass-card rounded-2xl overflow-hidden hover-lift-glow animate-fade-in-up">
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors z-10 flex items-center justify-center">
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 px-6 py-3 rounded-lg font-semibold text-gray-800">
+                    {t('Click to open in Google Maps', 'ಗೂಗಲ್ ಮ್ಯಾಪ್ಸ್‌ನಲ್ಲಿ ತೆರೆಯಲು ಕ್ಲಿಕ್ ಮಾಡಿ')}
+                  </span>
+                </div>
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3876.123!2d76.9!3d13.74!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sSira%2C+Tumkur%2C+Karnataka!5e0!3m2!1sen!2sin!4v1"
+                  width="100%"
+                  height="400"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  title="Natural Farm Sira Location"
+                  className="pointer-events-none"
+                />
+              </div>
+            </a>
+            
+            <div className="mt-4 text-center">
+              <a
+                href="https://maps.app.goo.gl/AG61BvBpDjr2nZZT6"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-semibold"
+              >
+                <MapPin className="w-5 h-5" />
+                {t('Open in Google Maps', 'ಗೂಗಲ್ ಮ್ಯಾಪ್ಸ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ')}
+              </a>
             </div>
             
             <div className="mt-8 grid md:grid-cols-2 gap-6">
@@ -197,7 +222,7 @@ const About = () => {
                     {t('Address', 'ವಿಳಾಸ')}
                   </h3>
                   <p className="text-muted-foreground">
-                    {t('Sira, Tumkur, Karnataka, India', 'ಸಿರಾ, ತುಮಕೂರು, ಕರ್ನಾಟಕ, ಭಾರತ')}
+                    {t('Shivanayyanapalya, Sira, Tumkur, Karnataka, India', 'ಶಿವನಯ್ಯನಪಾಳ್ಯ, ಸಿರಾ, ತುಮಕೂರು, ಕರ್ನಾಟಕ, ಭಾರತ')}
                   </p>
                 </div>
               </div>

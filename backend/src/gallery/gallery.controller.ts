@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Delete,
   Param,
   Body,
@@ -13,6 +14,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GalleryService } from './gallery.service';
 import { BulkDeleteDto } from './dto/bulk-delete.dto';
+import { ReorderGalleryDto } from './dto/reorder-gallery.dto';
 
 @Controller('api/gallery')
 export class GalleryController {
@@ -34,6 +36,13 @@ export class GalleryController {
   @Get('public')
   async findAllPublic() {
     return this.galleryService.findAll();
+  }
+
+  @Put('reorder')
+  @UseGuards(JwtAuthGuard)
+  async reorder(@Body() reorderDto: ReorderGalleryDto) {
+    await this.galleryService.reorder(reorderDto.images);
+    return { message: 'Gallery images reordered successfully' };
   }
 
   @Delete(':id')

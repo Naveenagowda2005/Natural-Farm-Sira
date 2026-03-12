@@ -215,15 +215,27 @@ export class ProductsService {
   async reorder(products: { id: string; display_order: number }[]): Promise<void> {
     const supabase = this.supabaseService.getClient();
 
-    for (const item of products) {
+    // Use a single transaction with upsert for maximum performance
+    try {
+      // Create update statements for all products at once
+      const updates = products.map(item => ({
+        id: item.id,
+        display_order: item.display_order
+      }));
+
+      // Use upsert with onConflict to update all at once
       const { error } = await supabase
         .from('products')
-        .update({ display_order: item.display_order })
-        .eq('id', item.id);
+        .upsert(updates, { 
+          onConflict: 'id',
+          ignoreDuplicates: false 
+        });
 
       if (error) {
         DatabaseErrorHandler.handleError(error, 'reorder products');
       }
+    } catch (error) {
+      DatabaseErrorHandler.handleError(error, 'reorder products transaction');
     }
   }
 }

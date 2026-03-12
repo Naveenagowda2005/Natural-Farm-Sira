@@ -54,13 +54,29 @@ export class GalleryService {
     const { data, error } = await supabase
       .from('gallery_images')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('display_order', { ascending: true });
 
     if (error) {
       DatabaseErrorHandler.handleError(error, 'fetch gallery images');
     }
 
     return data || [];
+  }
+
+  async reorder(images: { id: string; display_order: number }[]): Promise<void> {
+    const supabase = this.supabaseService.getClient();
+
+    // Update each image's display_order
+    for (const image of images) {
+      const { error } = await supabase
+        .from('gallery_images')
+        .update({ display_order: image.display_order })
+        .eq('id', image.id);
+
+      if (error) {
+        DatabaseErrorHandler.handleError(error, 'reorder gallery images');
+      }
+    }
   }
 
   async remove(id: string): Promise<void> {

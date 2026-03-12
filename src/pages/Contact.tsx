@@ -297,7 +297,7 @@ const Contact = () => {
                       {t('Our Location', 'ನಮ್ಮ ಸ್ಥಳ')}
                     </h3>
                     <p className="text-muted-foreground">
-                      Sira, Tumkur, Karnataka, India
+                      Shivanayyanapalya, Sira, Tumkur, Karnataka, India
                     </p>
                     <a
                       href="https://maps.app.goo.gl/AG61BvBpDjr2nZZT6"

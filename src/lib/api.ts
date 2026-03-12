@@ -356,6 +356,7 @@ export const bannersApi = {
 export interface GalleryImage {
   id: string;
   image_url: string;
+  display_order: number;
   created_at: string;
 }
 
@@ -395,6 +396,15 @@ export const galleryApi = {
     });
     return handleResponse(response);
   },
+
+  reorder: async (images: { id: string; display_order: number }[]): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/api/gallery/reorder`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ images }),
+    });
+    return handleResponse(response);
+  },
 };
 
 // ============= Videos API =============
@@ -403,6 +413,7 @@ export interface Video {
   title: string;
   video_url: string;
   video_type: 'url' | 'file';
+  display_order: number;
   created_at: string;
 }
 
@@ -450,6 +461,15 @@ export const videosApi = {
     const response = await fetch(`${API_BASE_URL}/api/videos/${id}`, {
       method: 'DELETE',
       headers: getHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  reorder: async (videos: { id: string; display_order: number }[]): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/api/videos/reorder`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ videos }),
     });
     return handleResponse(response);
   },

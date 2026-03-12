@@ -25,13 +25,109 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Loader2, Video as VideoIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Video as VideoIcon, GripVertical } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface VideoFormData {
   title: string;
   video_url: string;
   uploadType: 'url' | 'file';
 }
+
+interface SortableVideoProps {
+  video: Video;
+  onEdit: (video: Video) => void;
+  onDelete: (video: Video) => void;
+}
+
+const SortableVideo = ({ video, onEdit, onDelete }: SortableVideoProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: video.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const getVideoThumbnail = (video: Video): string | null => {
+    if (video.video_type === 'url') {
+      const youtubeMatch = video.video_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
+      if (youtubeMatch) {
+        return `https://img.youtube.com/vi/${youtubeMatch[1]}/mqdefault.jpg`;
+      }
+      
+      const vimeoMatch = video.video_url.match(/vimeo\.com\/(\d+)/);
+      if (vimeoMatch) {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const thumbnail = getVideoThumbnail(video);
+
+  return (
+    <Card ref={setNodeRef} style={style} className={isDragging ? 'shadow-lg' : ''}>
+      <CardHeader>
+        <div className="relative">
+          <button
+            className="absolute top-0 right-0 z-10 cursor-grab active:cursor-grabbing touch-none bg-white rounded p-1 shadow-md"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-5 w-5 text-gray-600" />
+          </button>
+          {thumbnail ? (
+            <img
+              src={thumbnail}
+              alt={video.title}
+              className="w-full h-48 object-cover rounded-md mb-4"
+            />
+          ) : (
+            <div className="w-full h-48 bg-gray-100 rounded-md mb-4 flex items-center justify-center">
+              <VideoIcon className="h-12 w-12 text-gray-400" />
+            </div>
+          )}
+        </div>
+        <CardTitle className="text-lg">{video.title}</CardTitle>
+        <CardDescription>
+          {video.video_type === 'url' ? 'External URL' : 'Uploaded File'}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(video)}
+            className="flex-1"
+          >
+            <Pencil className="h-4 w-4 mr-1" />
+            Edit
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDelete(video)}
+            className="flex-1"
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const Videos = () => {
   const { toast } = useToast();
@@ -47,6 +143,13 @@ const Videos = () => {
     uploadType: 'url',
   });
   const [formErrors, setFormErrors] = useState<Partial<VideoFormData>>({});
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Fetch videos
   const { data: videos = [], isLoading } = useQuery({
@@ -112,6 +215,25 @@ const Videos = () => {
       toast({
         title: 'Error',
         description: error.message || 'Failed to delete video',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Reorder mutation
+  const reorderMutation = useMutation({
+    mutationFn: videosApi.reorder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['videos'] });
+      toast({
+        title: 'Success',
+        description: 'Video order updated',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update video order',
         variant: 'destructive',
       });
     },
@@ -254,6 +376,23 @@ const Videos = () => {
     }
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = videos.findIndex((video) => video.id === active.id);
+      const newIndex = videos.findIndex((video) => video.id === over.id);
+
+      const newOrder = arrayMove(videos, oldIndex, newIndex);
+      const reorderedVideos = newOrder.map((video, idx) => ({
+        id: video.id,
+        display_order: idx,
+      }));
+
+      reorderMutation.mutate(reorderedVideos);
+    }
+  };
+
   const getVideoThumbnail = (video: Video): string | null => {
     if (video.video_type === 'url') {
       // Extract YouTube video ID
@@ -279,7 +418,7 @@ const Videos = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Videos</h1>
-          <p className="text-gray-600 mt-2">Manage video content</p>
+          <p className="text-gray-600 mt-2">Manage video content - Drag to reorder</p>
         </div>
         <Button onClick={handleOpenAdd}>
           <Plus className="h-4 w-4 mr-2" />
@@ -298,54 +437,27 @@ const Videos = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {videos.map((video) => {
-            const thumbnail = getVideoThumbnail(video);
-            return (
-              <Card key={video.id}>
-                <CardHeader>
-                  {thumbnail ? (
-                    <img
-                      src={thumbnail}
-                      alt={video.title}
-                      className="w-full h-48 object-cover rounded-md mb-4"
-                    />
-                  ) : (
-                    <div className="w-full h-48 bg-gray-100 rounded-md mb-4 flex items-center justify-center">
-                      <VideoIcon className="h-12 w-12 text-gray-400" />
-                    </div>
-                  )}
-                  <CardTitle className="text-lg">{video.title}</CardTitle>
-                  <CardDescription>
-                    {video.video_type === 'url' ? 'External URL' : 'Uploaded File'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenEdit(video)}
-                      className="flex-1"
-                    >
-                      <Pencil className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenDelete(video)}
-                      className="flex-1"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={videos.map(video => video.id)}
+            strategy={rectSortingStrategy}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {videos.map((video) => (
+                <SortableVideo
+                  key={video.id}
+                  video={video}
+                  onEdit={handleOpenEdit}
+                  onDelete={handleOpenDelete}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {/* Add/Edit Dialog */}

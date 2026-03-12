@@ -1,11 +1,65 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { categories } from '@/data/products';
 import BannerCarousel from '@/components/BannerCarousel';
 import { ArrowRight, Shield, Phone, Sparkles, Truck } from 'lucide-react';
 
 const Index = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const hasSpokenRef = useRef(false);
+
+  useEffect(() => {
+    // Check if this is a fresh page load/reload
+    const isPageReload = performance.navigation.type === 1 || 
+                         performance.getEntriesByType('navigation')[0]?.type === 'reload';
+    
+    // Also check sessionStorage to see if we've already played on this session
+    const hasPlayedThisSession = sessionStorage.getItem('welcomeAudioPlayed');
+    
+    if (!hasPlayedThisSession && (isPageReload || !hasSpokenRef.current)) {
+      const handleFirstInteraction = () => {
+        if (!hasSpokenRef.current) {
+          hasSpokenRef.current = true;
+          sessionStorage.setItem('welcomeAudioPlayed', 'true');
+          
+          try {
+            // Create audio element
+            const audio = new Audio();
+            
+            // Use pre-recorded audio file based on language
+            const audioFile = language === 'kn' 
+              ? '/welcome-kn.mp3'
+              : '/welcome-en.mp3';
+            
+            audio.src = audioFile;
+            audio.volume = 1;
+            audio.play().catch(error => {
+              console.error('Audio playback error:', error);
+            });
+          } catch (error) {
+            console.error('Audio error:', error);
+          }
+          
+          // Remove listener after first interaction
+          document.removeEventListener('click', handleFirstInteraction);
+          document.removeEventListener('touchstart', handleFirstInteraction);
+          document.removeEventListener('keydown', handleFirstInteraction);
+        }
+      };
+
+      // Add listeners for first user interaction
+      document.addEventListener('click', handleFirstInteraction, { once: true });
+      document.addEventListener('touchstart', handleFirstInteraction, { once: true });
+      document.addEventListener('keydown', handleFirstInteraction, { once: true });
+
+      return () => {
+        document.removeEventListener('click', handleFirstInteraction);
+        document.removeEventListener('touchstart', handleFirstInteraction);
+        document.removeEventListener('keydown', handleFirstInteraction);
+      };
+    }
+  }, [language]);
 
   const categoryIcons: Record<string, string> = {
     'agri-machines': '🚜',

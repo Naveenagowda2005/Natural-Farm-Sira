@@ -41,8 +41,8 @@ const Footer = () => {
             </div>
             <p className="text-sm opacity-80 leading-relaxed mb-6">
               {t(
-                'Your trusted partner for quality agricultural products, machinery, and expert guidance for India\'s farmers.',
-                'ಭಾರತದ ರೈತರಿಗೆ ಗುಣಮಟ್ಟದ ಕೃಷಿ ಉತ್ಪನ್ನಗಳು, ಯಂತ್ರಗಳು ಮತ್ತು ತಜ್ಞ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ನಿಮ್ಮ ವಿಶ್ವಾಸಾರ್ಹ ಪಾಲುದಾರ.'
+                'Your trusted partner for quality Napier Sticks, agricultural products, machinery, and expert guidance for India\'s farmers.',
+                'ಭಾರತದ ರೈತರಿಗೆ ಗುಣಮಟ್ಟದ ನೇಪಿಯರ್ ಕಡ್ಡಿಗಳು, ಕೃಷಿ ಉತ್ಪನ್ನಗಳು, ಯಂತ್ರಗಳು ಮತ್ತು ತಜ್ಞ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ನಿಮ್ಮ ವಿಶ್ವಾಸಾರ್ಹ ಪಾಲುದಾರ.'
               )}
             </p>
             {/* Social Links */}
@@ -50,7 +50,7 @@ const Footer = () => {
               <a href="https://www.facebook.com/share/1DsRJK2ek7/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-[#1877F2] flex items-center justify-center hover:bg-[#1877F2]/80 transition-all hover:scale-110">
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="https://www.instagram.com/naturalfarmsira/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] flex items-center justify-center hover:opacity-80 transition-all hover:scale-110">
+              <a href="https://instagram.com/natural_farm_sira?igshid=ZDc4ODBmNjlmNQ==" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] flex items-center justify-center hover:opacity-80 transition-all hover:scale-110">
                 <Instagram className="w-5 h-5" />
               </a>
               <a href="https://youtube.com/@naturalfarmsira" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-[#FF0000] flex items-center justify-center hover:bg-[#FF0000]/80 transition-all hover:scale-110">
@@ -104,7 +104,7 @@ const Footer = () => {
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div className="text-sm">
-                  <p>Sira, Tumkur,</p>
+                  <p>Shivanayyanapalya, Sira, Tumkur,</p>
                   <p>Karnataka, India</p>
                 </div>
               </div>

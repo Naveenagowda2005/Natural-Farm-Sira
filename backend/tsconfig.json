@@ -16,7 +16,8 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
 
-    "strict": false
+    "strict": false,
+    "useDefineForClassFields": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test"]

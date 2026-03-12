@@ -82,7 +82,7 @@ export class VideosService {
     const { data, error } = await supabase
       .from('videos')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('display_order', { ascending: true });
 
     if (error) {
       DatabaseErrorHandler.handleError(error, 'fetch videos');
@@ -118,6 +118,22 @@ export class VideosService {
     }
 
     return data;
+  }
+
+  async reorder(videos: { id: string; display_order: number }[]): Promise<void> {
+    const supabase = this.supabaseService.getClient();
+
+    // Update each video's display_order
+    for (const video of videos) {
+      const { error } = await supabase
+        .from('videos')
+        .update({ display_order: video.display_order })
+        .eq('id', video.id);
+
+      if (error) {
+        DatabaseErrorHandler.handleError(error, 'reorder videos');
+      }
+    }
   }
 
   async remove(id: string): Promise<void> {

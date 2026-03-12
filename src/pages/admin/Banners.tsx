@@ -15,15 +15,80 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Loader2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Loader2, GripVertical } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+interface SortableBannerProps {
+  banner: Banner;
+  index: number;
+  onDelete: (banner: Banner) => void;
+}
+
+const SortableBanner = ({ banner, index, onDelete }: SortableBannerProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: banner.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card ref={setNodeRef} style={style} className={isDragging ? 'shadow-lg' : ''}>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-4">
+          <button
+            className="cursor-grab active:cursor-grabbing touch-none"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-5 w-5 text-gray-400" />
+          </button>
+          <img
+            src={banner.image_url}
+            alt={`Banner ${banner.display_order}`}
+            className="w-32 h-20 object-cover rounded"
+          />
+          <div className="flex-1">
+            <p className="text-sm text-gray-600">Order: {index + 1}</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDelete(banner)}
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const Banners = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deletingBanner, setDeletingBanner] = useState<Banner | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Fetch banners
   const { data: banners = [], isLoading } = useQuery({
@@ -36,20 +101,9 @@ const Banners = () => {
     mutationFn: bannersApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['banners'] });
-      toast({
-        title: 'Success',
-        description: 'Banner uploaded successfully',
-      });
-      setSelectedFile(null);
-      setIsUploading(false);
     },
     onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to upload banner',
-        variant: 'destructive',
-      });
-      setIsUploading(false);
+      throw error;
     },
   });
 
@@ -94,38 +148,68 @@ const Banners = () => {
   });
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    // Validate file type
+    const validFiles: File[] = [];
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      toast({
-        title: 'Invalid file type',
-        description: 'Please select a JPEG, PNG, or WebP image',
-        variant: 'destructive',
-      });
-      return;
+
+    for (const file of files) {
+      // Validate file type
+      if (!validTypes.includes(file.type)) {
+        toast({
+          title: 'Invalid file type',
+          description: `${file.name}: Please select JPEG, PNG, or WebP images only`,
+          variant: 'destructive',
+        });
+        continue;
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'File too large',
+          description: `${file.name}: Image must be less than 5MB`,
+          variant: 'destructive',
+        });
+        continue;
+      }
+
+      validFiles.push(file);
     }
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Image must be less than 5MB',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setSelectedFile(file);
+    setSelectedFiles(validFiles);
   };
 
-  const handleUpload = () => {
-    if (!selectedFile) return;
+  const handleUpload = async () => {
+    if (selectedFiles.length === 0) return;
     
     setIsUploading(true);
-    createMutation.mutate(selectedFile);
+    
+    try {
+      // Upload files one by one
+      for (const file of selectedFiles) {
+        await createMutation.mutateAsync(file);
+      }
+      
+      toast({
+        title: 'Success',
+        description: `${selectedFiles.length} banner(s) uploaded successfully`,
+      });
+      
+      setSelectedFiles([]);
+      // Reset file input
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to upload some banners',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleOpenDelete = (banner: Banner) => {
@@ -139,32 +223,21 @@ const Banners = () => {
     }
   };
 
-  const handleMoveUp = (index: number) => {
-    if (index === 0) return;
-    
-    const newBanners = [...banners];
-    [newBanners[index - 1], newBanners[index]] = [newBanners[index], newBanners[index - 1]];
-    
-    const reorderedBanners = newBanners.map((banner, idx) => ({
-      id: banner.id,
-      display_order: idx + 1,
-    }));
-    
-    reorderMutation.mutate(reorderedBanners);
-  };
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-  const handleMoveDown = (index: number) => {
-    if (index === banners.length - 1) return;
-    
-    const newBanners = [...banners];
-    [newBanners[index], newBanners[index + 1]] = [newBanners[index + 1], newBanners[index]];
-    
-    const reorderedBanners = newBanners.map((banner, idx) => ({
-      id: banner.id,
-      display_order: idx + 1,
-    }));
-    
-    reorderMutation.mutate(reorderedBanners);
+    if (over && active.id !== over.id) {
+      const oldIndex = banners.findIndex((banner) => banner.id === active.id);
+      const newIndex = banners.findIndex((banner) => banner.id === over.id);
+
+      const newOrder = arrayMove(banners, oldIndex, newIndex);
+      const reorderedBanners = newOrder.map((banner, idx) => ({
+        id: banner.id,
+        display_order: idx + 1,
+      }));
+
+      reorderMutation.mutate(reorderedBanners);
+    }
   };
 
   return (
@@ -172,7 +245,7 @@ const Banners = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Banners</h1>
-          <p className="text-gray-600 mt-2">Manage homepage banners and their display order</p>
+          <p className="text-gray-600 mt-2">Manage homepage banners - Drag to reorder</p>
         </div>
       </div>
 
@@ -181,27 +254,35 @@ const Banners = () => {
         <CardContent className="p-6">
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-semibold mb-2">Upload New Banner</h3>
+              <h3 className="text-lg font-semibold mb-2">Upload New Banners</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Accepted formats: JPEG, PNG, WebP. Max size: 5MB
+                Accepted formats: JPEG, PNG, WebP. Max size: 5MB per image. You can select multiple images at once.
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <Input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handleFileSelect}
-                disabled={isUploading}
-                className="flex-1"
-              />
-              <Button
-                onClick={handleUpload}
-                disabled={!selectedFile || isUploading}
-              >
-                {isUploading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                <Plus className="h-4 w-4 mr-2" />
-                Upload
-              </Button>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileSelect}
+                  disabled={isUploading}
+                  className="flex-1"
+                  multiple
+                />
+                <Button
+                  onClick={handleUpload}
+                  disabled={selectedFiles.length === 0 || isUploading}
+                >
+                  {isUploading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  <Plus className="h-4 w-4 mr-2" />
+                  Upload {selectedFiles.length > 0 && `(${selectedFiles.length})`}
+                </Button>
+              </div>
+              {selectedFiles.length > 0 && (
+                <div className="text-sm text-gray-600">
+                  Selected: {selectedFiles.map(f => f.name).join(', ')}
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
@@ -221,54 +302,29 @@ const Banners = () => {
       ) : (
         <div>
           <p className="text-sm text-gray-600 mb-4">
-            Use the up/down arrows to reorder banners. The order will be saved automatically.
+            Drag banners to reorder them. The order will be saved automatically.
           </p>
-          <div className="space-y-2">
-            {banners.map((banner, index) => (
-              <Card key={banner.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex flex-col gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleMoveUp(index)}
-                        disabled={index === 0 || reorderMutation.isPending}
-                        className="h-6 w-6"
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleMoveDown(index)}
-                        disabled={index === banners.length - 1 || reorderMutation.isPending}
-                        className="h-6 w-6"
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <img
-                      src={banner.image_url}
-                      alt={`Banner ${banner.display_order}`}
-                      className="w-32 h-20 object-cover rounded"
-                    />
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-600">Order: {banner.display_order}</p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenDelete(banner)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={banners.map(banner => banner.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2">
+                {banners.map((banner, index) => (
+                  <SortableBanner
+                    key={banner.id}
+                    banner={banner}
+                    index={index}
+                    onDelete={handleOpenDelete}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         </div>
       )}
 
